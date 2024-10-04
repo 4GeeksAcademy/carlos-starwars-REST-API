@@ -33,6 +33,28 @@ class User(db.Model):
             # do not serialize the password, its a security breach
         }
 
+class Characters(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    personaje = db.Column(db.String(50), unique=True, nullable=False)
+    planeta_origen = db.Column(db.String(50), unique=True, nullable=False)
+    altura = db.Column(db.String(50), unique=True, nullable=False)
+    peso = db.Column(db.String(50), unique=True, nullable=False)
+
+    def __init__(self, personaje, planeta_origen, altura, peso):
+        self.personaje = personaje
+        self.planeta_origen = planeta_origen
+        self.altura = altura
+        self.peso = peso
+
+    def serialize(self):
+        return {
+            'id' : self.id,
+            'personaje' : self.personaje,
+            'planeta_origen' : self.planeta_origen,
+            'altura' : self.altura,
+            'peso' : self.peso,
+        }
+
 class Planets(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     planet_name = db.Column(db.String(50), unique=True, nullable=False)
@@ -67,13 +89,19 @@ class Favoritos(db.Model):
     planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), nullable=False)
     planet = db.relationship("Planets")
 
-    def __init__(self, user, planet):
+
+    personaje_id = db.Column(db.Integer, db.ForeignKey("characters.id"), nullable=False)
+    personaje = db.relationship("Characters")
+
+    def __init__(self, user, planet, personaje):
         self.user = user
         self.planet = planet
+        self.personaje = personaje
 
     def serialize (self):
         return {
             'id' : self.id,
             'user' : self.user,
-            'planet' : self.planet
+            'planet' : self.planet,
+            'personaje' : self.personaje,
         }
