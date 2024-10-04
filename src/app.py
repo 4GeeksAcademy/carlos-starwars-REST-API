@@ -38,14 +38,41 @@ def sitemap():
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
-
     response_body = {
-        "msg": "Hello, this is your GET /user response "
+        "msg" : "Hello, this is me",
     }
 
     return jsonify(response_body), 200
+    users = User.query.all()
+    usuario_serializado = [ persona.serialize() for persona in users ]
+    return jsonify(usuario_serializado), 200
+
+@app.route('/user', methods=['POST'])
+def add_user():
+
+    body = request.json
+
+    email = body.get('email', None)
+    user_name = body.get('user_name', None)
+    user_lastname = body.get('user_lastname', None)
+    password = body.get ('password', None)
+    date = body.date('date', None)
+
+    if email == None or user_name == None or user_lastname == None or password == None or date == None :
+        return jsonify({'msg' : 'Missing fields'}), 400
+    
+    try:
+        new_user = User(email=email, user_name=user_name, user_lastname=user_lastname, date=date)
+
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({'msg' : 'Success'}), 201
+
+    except:
+        return jsonify({'msg' : 'Something happened unexpectedly'}), 500
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
     PORT = int(os.environ.get('PORT', 3000))
-    app.run(host='0.0.0.0', port=PORT, debug=False)
+    app.run(host='0.0.0.0', port=PORT, debug=True)
