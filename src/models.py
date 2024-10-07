@@ -3,7 +3,9 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class User(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
+
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
     user_name = db.Column(db.String(250), unique=False, nullable=False)
@@ -37,27 +39,30 @@ class Characters(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    personaje = db.Column(db.String(50), unique=True, nullable=False)
+    character = db.Column(db.String(50), unique=True, nullable=False)
     planeta_origen = db.Column(db.String(50), unique=True, nullable=False)
     altura = db.Column(db.String(50), unique=True, nullable=False)
     peso = db.Column(db.String(50), unique=True, nullable=False)
 
-    def __init__(self, personaje, planeta_origen, altura, peso):
-        self.personaje = personaje
+    def __init__(self, character, planeta_origen, altura, peso):
+        self.character = character
         self.planeta_origen = planeta_origen
         self.altura = altura
         self.peso = peso
 
     def serialize(self):
         return {
-            'personaje' : self.personaje,
+            'id' : self.id,
+            'character' : self.character,
             'planeta_origen' : self.planeta_origen,
             'altura' : self.altura,
             'peso' : self.peso,
         }
 
 class Planets(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
+
     planet_name = db.Column(db.String(50), unique=True, nullable=False)
     poblacion = db.Column(db.String(50), unique=False, nullable=False)
     clima = db.Column(db.String(50), unique=False, nullable=False)
@@ -73,6 +78,7 @@ class Planets(db.Model):
         
     def serialize(self):
         return {
+            'id' : self.id,
             'planet_name' : self.planet_name,
             'poblacion' : self.poblacion,
             'clima' : self.clima,
@@ -89,18 +95,18 @@ class Favoritos(db.Model):
     planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), nullable=False)
     planet = db.relationship("Planets")
 
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), nullable=False)
+    character = db.relationship("Characters")
 
-    personaje_id = db.Column(db.Integer, db.ForeignKey("characters.id"), nullable=False)
-    personaje = db.relationship("Characters")
-
-    def __init__(self, user, planet, personaje):
+    def __init__(self, user, planet, character):
         self.user = user
         self.planet = planet
-        self.personaje = personaje
+        self.character = character
 
     def serialize (self):
         return {
+            'id' : self.id,
             'user' : self.user.serialize(),
             'planet' : self.planet.serialize(),
-            'personaje' : self.personaje.serialize(),
+            'character' : self.character.serialize(),
         }

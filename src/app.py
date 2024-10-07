@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Characters, Favoritos
+from models import db, User, Characters, Planets, Favoritos
 #from models import Person
 
 app = Flask(__name__)
@@ -68,6 +68,17 @@ def add_user():
     except:
         return jsonify({'msg' : 'Something happened unexpectedly'}), 500
     
+@app.route('/characters', methods=['GET'])
+def get_characters():
+    characters  = Characters.query.all()
+    char_serializados = [ character.serialize() for character in characters ]
+    return jsonify(char_serializados), 200
+
+@app.route('/planets', methods=['GET'])
+def get_planets():
+    planets = Planets.query.all()
+    planet_serializados = [ planet.serialize() for planet in planets ]
+    return jsonify(planet_serializados), 200
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
@@ -75,6 +86,28 @@ def get_favorites():
     fav_serializado = [ favorito.serialize() for favorito in favoritos ]
     return jsonify(fav_serializado), 200
 
+@app.route('/favorites', methods=['POST'])
+def add_favorites():
+    body = request.json
+    user_id = body.get('user_id', None)
+    character_id = body.get ('character_id', None)
+    planet_id = body.get('planet_id', None)
+
+    if user_id == None or character_id == None or planet_id == None:
+        return jsonify({'error' : f'Missing fields'}), 400
+    
+    user = User.query.get(user_id)
+    character = Characters.query.get(character_id)
+    planet = Planets. query.get(planet_id)
+
+    if user == None or character == None or planet == None :
+        return jsonify({ "error" : f"User with id {user_id} or Character with id {character_id} or Planet with id {planet_id} not found" }), 400
+
+    new_favorite = Favoritos(user, character, planet)
+    db.session.add(new_favorite)
+    db.session.commit()
+    return jsonify(new_favorite.serialize()), 200
+        
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':
