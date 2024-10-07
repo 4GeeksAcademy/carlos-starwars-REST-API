@@ -34,7 +34,9 @@ class User(db.Model):
         }
 
 class Characters(db.Model):
+
     id = db.Column(db.Integer, primary_key=True)
+
     personaje = db.Column(db.String(50), unique=True, nullable=False)
     planeta_origen = db.Column(db.String(50), unique=True, nullable=False)
     altura = db.Column(db.String(50), unique=True, nullable=False)
@@ -48,7 +50,6 @@ class Characters(db.Model):
 
     def serialize(self):
         return {
-            'id' : self.id,
             'personaje' : self.personaje,
             'planeta_origen' : self.planeta_origen,
             'altura' : self.altura,
@@ -72,7 +73,6 @@ class Planets(db.Model):
         
     def serialize(self):
         return {
-            'id' : self.id,
             'planet_name' : self.planet_name,
             'poblacion' : self.poblacion,
             'clima' : self.clima,
@@ -100,8 +100,7 @@ class Favoritos(db.Model):
 
     def serialize (self):
         return {
-            'id' : self.id,
-            'user' : self.user,
-            'planet' : self.planet,
-            'personaje' : self.personaje,
+            'user' : self.user.serialize(),
+            'planet' : self.planet.serialize(),
+            'personaje' : self.personaje.serialize(),
         }
