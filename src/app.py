@@ -36,14 +36,14 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
-@app.route('/user', methods=['GET'])
+@app.route('/users', methods=['GET'])
 def handle_hello():
 
     users = User.query.all()
     usuario_serializado = [ persona.serialize() for persona in users ]
     return jsonify(usuario_serializado), 200
 
-@app.route('/user', methods=['POST'])
+@app.route('/users', methods=['POST'])
 def add_user():
 
     body = request.json
@@ -68,17 +68,38 @@ def add_user():
     except:
         return jsonify({'msg' : 'Something happened unexpectedly'}), 500
     
+@app.route('/user/<int:user_id>/favorites', methods=['GET'])
+def get_user_favorites(user_id):
+    favorites = Favoritos.query.filter_by(user_id=user_id).all()
+    if not favorites:
+        return jsonify({'error' : 'Favorite not found'}), 404
+    return jsonify([favorite.serialize() for favorite in favorites]), 200
+    
 @app.route('/characters', methods=['GET'])
 def get_characters():
     characters  = Characters.query.all()
     char_serializados = [ character.serialize() for character in characters ]
     return jsonify(char_serializados), 200
 
+@app.route('/characters/<int:character_id>', methods=['GET'])
+def get_one_characters(character_id):
+    character  = Characters.query.get(character_id)
+    if character is None:
+        return ({'error' : 'Character not found'}), 404
+    return jsonify(character.serialize()), 200
+
 @app.route('/planets', methods=['GET'])
 def get_planets():
     planets = Planets.query.all()
     planet_serializados = [ planet.serialize() for planet in planets ]
     return jsonify(planet_serializados), 200
+
+@app.route('/planets/<int:planet_id>', methods=['GET'])
+def get_one_planet(planet_id):
+    planet = Planets.query.get(planet_id)
+    if planet is None:
+        return ({'error' : 'Planet not found'}), 404
+    return jsonify(planet.serialize()), 200
 
 @app.route('/favorites', methods=['GET'])
 def get_favorites():
@@ -93,21 +114,35 @@ def add_favorites():
     character_id = body.get ('character_id', None)
     planet_id = body.get('planet_id', None)
 
-    if user_id == None or character_id == None or planet_id == None:
-        return jsonify({'error' : f'Missing fields'}), 400
+    if user_id is None:
+        return ({'error' : 'User_id not found'}), 404
     
+    if character_id is None and planet_id is None:
+        return ({'error' : 'Character id or Planet id not found'}), 404
+
     user = User.query.get(user_id)
-    character = Characters.query.get(character_id)
-    planet = Planets. query.get(planet_id)
+    if user is None:
+        return({'error' : f'User with id {user_id} not found'}), 404
+    
+    if character_id is not None:
+        character = Characters.query.get(character_id)
+        if character is None:
+            return ({'error' : f'Character with id {character_id} not found'}), 404
+    else:
+        character = None
 
-    if user == None or character == None or planet == None :
-        return jsonify({ "error" : f"User with id {user_id} or Character with id {character_id} or Planet with id {planet_id} not found" }), 400
+    if planet_id is not None:
+        planet = Planets.query.get(planet_id)
+        if planet is None:
+            return ({'error' : f'Planet with id {planet_id} not found'}), 404
+    else:
+        planet = None
 
-    new_favorite = Favoritos(user, character, planet)
+    new_favorite = Favoritos(user_id=user_id, character_id=character_id, planet_id=planet_id)
     db.session.add(new_favorite)
     db.session.commit()
     return jsonify(new_favorite.serialize()), 200
-        
+    
 
 # this only runs if `$ python src/app.py` is executed
 if __name__ == '__main__':

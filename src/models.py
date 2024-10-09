@@ -92,21 +92,21 @@ class Favoritos(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
     user = db.relationship("User")
 
-    planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), nullable=False)
+    planet_id = db.Column(db.Integer, db.ForeignKey("planets.id"), nullable=True)
     planet = db.relationship("Planets")
 
-    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), nullable=False)
+    character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), nullable=True)
     character = db.relationship("Characters")
 
-    def __init__(self, user, planet, character):
-        self.user = user
-        self.planet = planet
-        self.character = character
+    def __init__(self, user_id, planet_id, character_id):
+        self.user_id = user_id
+        self.planet_id = planet_id
+        self.character_id = character_id
 
     def serialize (self):
         return {
             'id' : self.id,
             'user' : self.user.serialize(),
-            'planet' : self.planet.serialize(),
-            'character' : self.character.serialize(),
+            'planet' : self.planet.serialize() if self.planet else None,
+            'character' : self.character.serialize() if self.character else None,
         }
