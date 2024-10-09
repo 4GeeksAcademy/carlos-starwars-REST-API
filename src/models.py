@@ -98,7 +98,7 @@ class Favoritos(db.Model):
     character_id = db.Column(db.Integer, db.ForeignKey("characters.id"), nullable=True)
     character = db.relationship("Characters")
 
-    def __init__(self, user_id, planet_id, character_id):
+    def __init__(self, user_id, planet_id=None, character_id=None):
         self.user_id = user_id
         self.planet_id = planet_id
         self.character_id = character_id
